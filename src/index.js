@@ -1,5 +1,4 @@
 import uuid from 'uuid';
-import equalDeep from 'lodash.isequal';
 import cloneDeep from 'lodash.clonedeep';
 import Immutable from 'immutable';
 import transit from 'transit-immutable-js';
@@ -139,8 +138,7 @@ export const persistentReducer = (reducer, reducerOptions={}) => {
             saveReducer(change.doc._id, toPouch(currentState)).then(() => {
               onSave(currentState);
             });
-          else if (!isEqual(fromPouch(change.doc.state), currentState))
-            setReducer(change.doc);
+          setReducer(change.doc);
         }
       });
     });
@@ -183,12 +181,6 @@ export const persistentReducer = (reducer, reducerOptions={}) => {
     else
       return cloneDeep(x);
   }
-  function isEqual(x, y) {
-    if (immutable)
-      return Immutable.is(x, y);
-    else
-      return equalDeep(x, y);
-  }
 
   // the proxy function that wraps the real reducer
   const proxyReducer = (state, action) => {
@@ -223,7 +215,7 @@ export const persistentReducer = (reducer, reducerOptions={}) => {
         }
 
         const isInitialized = initializedReducers[name];
-        if (isInitialized && !isEqual(nextState, currentState)) {
+        if (isInitialized) {
           currentState = nextState;
           saveReducer(name, toPouch(currentState)).then(() => {
             onSave(currentState);
